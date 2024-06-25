@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 
+
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 // Define the type for user
@@ -15,8 +16,8 @@ type User = {
 
 // Dummy user data (replace with actual authentication logic)
 const dummyUsers: User[] = [
-  { username: 'user1', password: 'password1', name: 'User One' },
-  { username: 'user2', password: 'password2', name: 'User Two' },
+  { username: 'user1', password: 'pass1', name: 'User One' },
+  { username: 'user2', password: 'pass2', name: 'User Two' },
 ];
 
 const LoginScreen = () => {

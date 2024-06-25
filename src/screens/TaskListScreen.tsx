@@ -1,22 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, Alert } from 'react-native';
+// src/screens/TaskListScreen.tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, Modal, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList, Task } from '../navigation/types';
+//import { Task } from './src/navigation/types.ts';
 
-const tasks = [
-  {
-    id: '1',
-    title: 'Raideep Traders',
-    code: '(RJT503234)',
-    size: '2200 Sq. ft',
-    address: 'Main road, kenchia, Sri Ganganagar, Sri Ganganagar, Rajasthan, DP024569',
-    contact: '+91 9820898208',
-    officer: 'Prakash Sharma',
-  },
-];
+type TaskListScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
+
+// Mock function to simulate fetching data from a backend
+const fetchTasksFromBackend = async (): Promise<Task[]> => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: '1',
+          title: 'Raideep Traders',
+          code: '(RJT503234)',
+          size: '2200 Sq. ft',
+          address: 'Main road, kenchia, Sri Ganganagar, Sri Ganganagar, Rajasthan, DP024569',
+          contact: '+91 9820898208',
+          officer: 'Prakash Sharma',
+        },
+        {
+          id: '2',
+          title: 'Amandeep Traders',
+          code: '(RJT503235)',
+          size: '3200 Sq. ft',
+          address: 'Main road, kenchia, Sri Ganganagar, Sri Ganganagar, Rajasthan, DP024569',
+          contact: '+91 7347832208',
+          officer: 'Sharma',
+        },
+      ]);
+    }, 1000);
+  });
+};
 
 const TaskListScreen = () => {
+  const navigation = useNavigation<TaskListScreenNavigationProp>();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', code: '', size: '', address: '', contact: '', officer: '' });
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Assuming initially logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const data = await fetchTasksFromBackend();
+      setTasks(data);
+    };
+    fetchTasks();
+  }, []);
 
   const handleAddTask = () => {
     if (Object.values(newTask).some(field => field === '')) {
@@ -24,23 +57,23 @@ const TaskListScreen = () => {
       return;
     }
 
-    tasks.push({ ...newTask, id: (tasks.length + 1).toString() });
+    setTasks([...tasks, { ...newTask, id: (tasks.length + 1).toString() }]);
     setNewTask({ title: '', code: '', size: '', address: '', contact: '', officer: '' });
     setModalVisible(false);
   };
 
   const handleLogout = () => {
-    // Example of logout actions
-    // Clear any user tokens or session data
-    // Navigate to login screen or perform any other necessary actions
     setIsLoggedIn(false);
-    // In a real application, you might perform additional actions here such as:
-    // - Clearing local storage
-    // - Resetting navigation state
-    // - Informing the server about logout
-    // - Navigating to the login screen
-    //   navigation.navigate('LoginScreen'); // Uncomment if using navigation
   };
+
+  const renderTask = ({ item }: { item: Task }) => (
+    <TouchableOpacity style={styles.taskCard} onPress={() => navigation.navigate('TaskDetail', { task: item })}>
+      <Text style={styles.taskTitle}>{item.title} {item.code}</Text>
+      <Text>{item.address}</Text>
+      <Text>📞 {item.contact}</Text>
+      <Text>Linked Officer: {item.officer}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -60,22 +93,16 @@ const TaskListScreen = () => {
         <Text style={styles.title}>मेरा काम</Text>
         <TextInput style={styles.searchBox} placeholder="Search..." />
       </View>
-      <ScrollView>
-        {tasks.map(task => (
-          <View key={task.id} style={styles.taskCard}>
-            <Text style={styles.taskTitle}>{task.title} {task.code}</Text>
-            <Text>{task.address}</Text>
-            <Text>📞 {task.contact}</Text>
-            <Text>Linked Officer: {task.officer}</Text>
-          </View>
-        ))}
-      </ScrollView>
+      <FlatList
+        data={tasks}
+        renderItem={renderTask}
+        keyExtractor={item => item.id}
+      />
       {isLoggedIn && (
         <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       )}
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -89,7 +116,7 @@ const TaskListScreen = () => {
               key={field}
               style={styles.input}
               placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={newTask[field]}
+              value={newTask[field as keyof typeof newTask]}
               onChangeText={text => setNewTask({ ...newTask, [field]: text })}
             />
           ))}

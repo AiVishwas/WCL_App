@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './src/screens/LoginScreen';
 import TaskListScreen from './src/screens/TaskListScreen';
+import TaskDetailScreen from './src/screens/TaskDetailScreen';
 import { RootStackParamList } from './src/navigation/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -25,6 +26,11 @@ const App = () => {
           name="TaskList"
           component={TaskListScreen}
           options={{ headerShown: false }} // Hide the header for the TaskList screen
+        />
+        <Stack.Screen
+          name="TaskDetail"
+          component={TaskDetailScreen}
+          options={{ headerShown: false }} // Hide the header for the TaskDetail screen
         />
       </Stack.Navigator>
     </NavigationContainer>
