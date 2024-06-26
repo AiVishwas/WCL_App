@@ -1,20 +1,18 @@
+// LoginScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 
-
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
-// Define the type for user
 type User = {
   username: string;
   password: string;
   name: string;
 };
 
-// Dummy user data (replace with actual authentication logic)
 const dummyUsers: User[] = [
   { username: 'user1', password: 'pass1', name: 'User One' },
   { username: 'user2', password: 'pass2', name: 'User Two' },
@@ -26,21 +24,12 @@ const LoginScreen = () => {
   const [password, setPassword] = useState<string>('');
 
   const handleLogin = () => {
-    // Basic validation (you should add more thorough validation)
-    if (!username || !password) {
-      Alert.alert('Error', 'Username and password are required.');
-      return;
-    }
-
-    // Simulate authentication logic
     const user = dummyUsers.find(user => user.username === username && user.password === password);
-
     if (user) {
-      // Navigate to the TaskList screen with user data
-      navigation.navigate('TaskList'); // Corrected navigation call
+      navigation.navigate('TaskList', { officerName: user.name }); 
     } else {
-      Alert.alert('Error', 'Invalid username or password.');
-    }
+      Alert.alert('Login Failed', 'Invalid username or password');
+    }  
   };
 
   return (
@@ -87,7 +76,7 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start', // Move contents to the top
+    justifyContent: 'flex-start',
     paddingHorizontal: 20,
     paddingTop: 10,
   },

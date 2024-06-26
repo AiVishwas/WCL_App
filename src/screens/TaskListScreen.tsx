@@ -1,14 +1,15 @@
+// TaskListScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, Modal, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList, Task } from '../navigation/types';
-import {StackActions} from '@react-navigation/native';
+import { StackActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootStackParamList, Task } from '../navigation/types';
 
 type TaskListScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
+type TaskListScreenRouteProp = RouteProp<RootStackParamList, 'TaskList'>;
 
-// Mock function to simulate fetching data from a backend
 const fetchTasksFromBackend = async (): Promise<Task[]> => {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -24,12 +25,12 @@ const fetchTasksFromBackend = async (): Promise<Task[]> => {
         },
         {
           id: '2',
-          title: 'Amandeep Traders',
+          title: 'Jayesh Traders',
           code: '(RJT503235)',
           size: '3200 Sq. ft',
-          address: 'Main road, kenchia, Sri Ganganagar, Sri Ganganagar, Rajasthan, DP024569',
-          contact: '+91 7347832208',
-          officer: 'Sharma',
+          address: 'Ocean complex, Atlantis Lane, Vadodara Rural Taluka, Vadodara District, Gujarat, 390007, India',
+          contact: '+91 8225913371',
+          officer: 'Jayesh Sharma',
         },
       ]);
     }, 1000);
@@ -38,6 +39,8 @@ const fetchTasksFromBackend = async (): Promise<Task[]> => {
 
 const TaskListScreen = () => {
   const navigation = useNavigation<TaskListScreenNavigationProp>();
+  const route = useRoute<TaskListScreenRouteProp>();
+  const { officerName } = route.params || {}; 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', code: '', size: '', address: '', contact: '', officer: '' });
@@ -65,12 +68,12 @@ const TaskListScreen = () => {
   const handleLogout = () => {
     AsyncStorage.removeItem('userToken')
       .then(() => {
-        setIsLoggedIn(false); // Update login state to false after logout
+        setIsLoggedIn(false);
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Error clearing user session:', error);
       });
-      navigation.dispatch(StackActions.popToTop());
+    navigation.dispatch(StackActions.popToTop());
   };
 
   const renderTask = ({ item }: { item: Task }) => (
@@ -86,18 +89,18 @@ const TaskListScreen = () => {
     <View style={styles.container}>
       <View style={styles.header1}>
         <Image source={require('../assets/images/new_logo.png')} style={styles.logo} />
-        {isLoggedIn ? (
+        {isLoggedIn && (
           <View style={styles.headerRight}>
             <View style={styles.userNameContainer}>
               <Text style={styles.userName}>नमस्ते</Text>
-              <Text style={styles.officerName}>प्रकाश शर्मा</Text>
+              <Text style={styles.officerName}>{officerName}</Text>
             </View>
             <Image source={require('../assets/images/user.png')} style={styles.profileImage} />
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Image source={require('../assets/images/logout.png')} style={styles.logoutImage} />
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
       </View>
       <View style={styles.topSection}>
         <Text style={styles.title}>मेरा काम</Text>
@@ -154,8 +157,8 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     resizeMode: 'contain',
-    marginTop : 10,
-    marginLeft : 10,
+    marginTop: 10,
+    marginLeft: 10,
   },
   headerRight: {
     flexDirection: 'row',
@@ -181,12 +184,12 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 5,
     marginRight: 5,
-    marginTop : 10,
+    marginTop: 10,
   },
   logoutButton: {
     width: 40,
     height: 40,
-    marginTop : 10,
+    marginTop: 10,
     marginRight: 10,
   },
   logoutImage: {
@@ -194,31 +197,42 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
   },
- 
   topSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 10,
+    borderRadius: 15,
+    margin : 10,
+    marginBottom : 15,
+    paddingVertical: 10,
+    backgroundColor : "#FF3131"
   },
   title: {
-    fontSize: 22,
+    marginHorizontal: 10,
+    fontSize: 24,
     fontWeight: 'bold',
+    color : "white",
   },
   searchBox: {
-    width: '40%',
-    height: 40,
-    backgroundColor: '#FFF',
-    borderRadius: 5,
+    flex: 0.5,
+    backgroundColor: '#fff',
+    borderRadius: 8,
     paddingHorizontal: 10,
+    marginLeft: 10,
+    borderWidth: 2.5, 
+    borderColor: '#000',
   },
   taskCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     padding: 15,
+    margin: 10,
     borderRadius: 5,
-    marginBottom: 15,
-    marginHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   taskTitle: {
     fontSize: 18,
@@ -227,52 +241,59 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#007AFF',
     width: 60,
     height: 60,
-    backgroundColor: 'red',
     borderRadius: 30,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   addButtonText: {
-    color: '#FFF',
-    fontSize: 30,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 36,
+    marginBottom: 5,
   },
   modalView: {
-    flex: 1,
-    justifyContent: 'center',
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 35,
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
     marginBottom: 20,
   },
   input: {
-    width: '80%',
-    height: 50,
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    fontSize: 18,
+    width: '100%',
+    backgroundColor: '#E0F7FA',
+    padding: 10,
+    borderRadius: 5,
     marginBottom: 10,
   },
   modalButton: {
-    width: '80%',
-    height: 50,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 5,
+    padding: 10,
+    elevation: 2,
+    marginTop: 10,
   },
   modalButtonText: {
-    color: '#FFF',
-    fontSize: 18,
+    color: 'white',
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
