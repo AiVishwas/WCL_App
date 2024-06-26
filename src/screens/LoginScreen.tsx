@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     right: 20,
     width: 170,
     height: 170,
-    opacity: 0.75,
+    opacity: 0.0,
   },
 });
 

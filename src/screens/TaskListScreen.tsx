@@ -1,10 +1,10 @@
-// src/screens/TaskListScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, Modal, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, Task } from '../navigation/types';
-//import { Task } from './src/navigation/types.ts';
+import {StackActions} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type TaskListScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
 
@@ -63,7 +63,14 @@ const TaskListScreen = () => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    AsyncStorage.removeItem('userToken')
+      .then(() => {
+        setIsLoggedIn(false); // Update login state to false after logout
+      })
+      .catch((error) => {
+        console.error('Error clearing user session:', error);
+      });
+      navigation.dispatch(StackActions.popToTop());
   };
 
   const renderTask = ({ item }: { item: Task }) => (
@@ -77,11 +84,14 @@ const TaskListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={styles.header1}>
         <Image source={require('../assets/images/new_logo.png')} style={styles.logo} />
         {isLoggedIn ? (
           <View style={styles.headerRight}>
-            <Text style={styles.userName}>नमस्ते नरेश मोर्य</Text>
+            <View style={styles.userNameContainer}>
+              <Text style={styles.userName}>नमस्ते</Text>
+              <Text style={styles.officerName}>प्रकाश शर्मा</Text>
+            </View>
             <Image source={require('../assets/images/user.png')} style={styles.profileImage} />
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Image source={require('../assets/images/logout.png')} style={styles.logoutImage} />
@@ -134,43 +144,57 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#E0F7FA',
   },
-  header: {
+  header1: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#E0F7FA',
+    marginBottom: 20,
   },
   logo: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     resizeMode: 'contain',
+    marginTop : 10,
+    marginLeft : 10,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  userNameContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    marginEnd: 10,
+    marginTop: 10,
+  },
   userName: {
-    fontSize: 18,
-    marginRight: 10,
+    fontSize: 19,
+    color: '#333',
+  },
+  officerName: {
+    fontSize: 16,
+    color: '#585858',
+    fontWeight: 'bold',
   },
   profileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 5,
+    marginRight: 5,
+    marginTop : 10,
   },
   logoutButton: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#E0F7FA',
+    width: 40,
+    height: 40,
+    marginTop : 10,
+    marginRight: 10,
   },
   logoutImage: {
-    width: '100%',
-    height: '100%',
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
-    backgroundColor: '#E0F7FA',
   },
+ 
   topSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',

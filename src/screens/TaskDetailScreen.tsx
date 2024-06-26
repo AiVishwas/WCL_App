@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image, FlatList, Modal } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
-import { RouteProp, useNavigation } from '@react-navigation/native';
+import { useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
+import {StackActions} from '@react-navigation/native';
 import { Card } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type TaskDetailScreenRouteProp = RouteProp<RootStackParamList, 'TaskDetail'>;
 
 const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
+  const navigation = useNavigation();
   const { task } = route.params;
   const [uploadedFiles, setUploadedFiles] = useState<DocumentPickerResponse[]>([]);
+  const [selectedPhotosCard1, setSelectedPhotosCard1] = useState<string[]>([]);
+  const [selectedPhotosCard2, setSelectedPhotosCard2] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-  const handleDocumentPick = async () => {
+  const handleDocumentPick = async (cardIndex: number) => {
     try {
       const results = await DocumentPicker.pick({
-        type: [DocumentPicker.types.images, DocumentPicker.types.video],
+        type: [DocumentPicker.types.images],
       });
       setUploadedFiles(prevFiles => [...prevFiles, ...results]);
+      if (cardIndex === 1) {
+        setSelectedPhotosCard1(prevPhotos => [...prevPhotos, ...results.map(file => file.uri)]);
+      } else if (cardIndex === 2) {
+        setSelectedPhotosCard2(prevPhotos => [...prevPhotos, ...results.map(file => file.uri)]);
+      }
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         console.log('User cancelled the document picker');
@@ -27,31 +37,66 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   };
 
   const handleGoBack = () => {
-    Alert.alert('Back Btton Pressed', 'Go Back')
+    navigation.goBack();
+  };
+
+  const handleSubmitOverall = () => {
+    Alert.alert('Submit Button Pressed', 'Submit Overall');
   };
 
   const handleAdd = () => {
     Alert.alert('Add Files', 'Add Photos/Videos');
   };
 
-  const handleSubmit = () => {
-    Alert.alert('Submitted', 'All documents and measurements have been checked.');
+  const handleSubmit = (cardIndex: number) => {
+    if (cardIndex === 1) {
+      Alert.alert('Submitted', 'Photos from Card 1 have been submitted.');
+    } else if (cardIndex === 2) {
+      Alert.alert('Submitted', 'Photos from Card 2 have been submitted.');
+    }
   };
 
   const handleLogout = () => {
-    // Implement logout functionality here
+    AsyncStorage.removeItem('userToken')
+      .then(() => {
+        setIsLoggedIn(false); // Update login state to false after logout
+      })
+      .catch((error) => {
+        console.error('Error clearing user session:', error);
+      });
+      navigation.dispatch(StackActions.popToTop());
+  };
+
+  const handleCancel = () => {
+    Alert.alert('Cancel', 'Delete Images ?');
+  };
+
+  const renderPhotoContainer = (selectedPhotos: string[], cardIndex: number) => {
+    console.log(`Rendering photo container for card ${cardIndex}, selected photos:`, selectedPhotos);
+    return (
+      <View style={styles.photoContainer}>
+        {selectedPhotos.map((photo: string, index: number) => (
+          <Image key={index} source={{ uri: photo }} style={styles.photo} />
+        ))}
+        {/* Render placeholder images for remaining slots in a 2x2 grid */}
+        {Array.from({ length: 4 - selectedPhotos.length }, (_, index) => (
+          <TouchableOpacity key={index} onPress={() => handleDocumentPick(cardIndex)} style={styles.placeholderContainer}>
+            <Image source={require('../assets/images/placeholder.png')} style={styles.placeholderImage} />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   return (
-    
     <ScrollView style={styles.container}>
       <View style={styles.header1}>
         <Image source={require('../assets/images/new_logo.png')} style={styles.logo} />
         {isLoggedIn ? (
           <View style={styles.headerRight}>
             <View style={styles.userNameContainer}>
-            <Text style={styles.userName}>नमस्ते</Text>
-            <Text style={styles.officerName}>{task.officer}</Text>
+              <Text style={styles.userName}>नमस्ते</Text>
+              <Text style={styles.officerName}>{task.officer}</Text>
             </View>
             <Image source={require('../assets/images/user.png')} style={styles.profileImage} />
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -61,102 +106,44 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
         ) : null}
       </View>
       <Card style={styles.card}>
-  <Card.Content style={styles.cardContent}>
-    <View style={styles.titleContainer}>
-      <TouchableOpacity onPress={handleGoBack}>
-        <Image source={require('../assets/images/back_button.jpg')} style={styles.buttonIcon} />
-      </TouchableOpacity>
-      <Text style={styles.header}>{task.title}</Text>
-      <TouchableOpacity onPress={handleAdd}>
-        <Image source={require('../assets/images/plus_button.png')} style={styles.buttonIcon} />
-      </TouchableOpacity>
-    </View>
-    <Text style={styles.subHeader}>{task.code}    {task.size}</Text>
-  </Card.Content>
-</Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.sectionHeader}>ग्राहक ज्ञान</Text>
-          <Text style={styles.label}>नाम</Text>
-          <TextInput style={styles.input} placeholder="" />
-          <Text style={styles.allTasks}>All Task</Text>
-        </Card.Content>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.sectionHeader}>Raideep Traders</Text>
-          <Text style={styles.label}>नाम</Text>
-          <TextInput style={styles.input} placeholder="" />
-          <Text style={styles.label}>डीलर / डिपो प्रमाणप�</Text>
-          <Button title="जमा करे" onPress={handleSubmit} />
-          <Button title="किराये की रसीद�" onPress={handleDocumentPick} />
-
-          <Text style={styles.label}>फोटो अपलोड करे</Text>
-          <Button title="फोटो अपलोड करे" onPress={handleDocumentPick} />
-
-          <Text style={styles.address}>Main Road Devgard, near police station, 560339</Text>
+        <Card.Content style={styles.cardContent}>
+          <View style={styles.titleContainer}>
+            <TouchableOpacity onPress={handleGoBack}>
+              <Image source={require('../assets/images/back_button.png')} style={styles.buttonIcon} />
+            </TouchableOpacity>
+            <Text style={styles.header}>{task.title}</Text>
+            <TouchableOpacity onPress={handleAdd}>
+              <Image source={require('../assets/images/plus_button.png')} style={styles.buttonIcon2} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.subHeader}>{task.code} {task.size}</Text>
         </Card.Content>
       </Card>
 
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.sectionHeader}>जगह</Text>
+          <Text style={styles.address}>{task.address}</Text>        
+        </Card.Content>
+      </Card>
+      <Card style={styles.card}>
+        <Card.Content>
           <View style={styles.row}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>चौड़ाई (W)</Text>
-              <TextInput style={styles.input} placeholder="27" />
+              <TextInput style={styles.input} placeholder="0.0" />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>लंबाई (H)</Text>
-              <TextInput style={styles.input} placeholder="16.5" />
+              <TextInput style={styles.input} placeholder="0.0" />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>कटौती (W)</Text>
-              <TextInput style={styles.input} placeholder="0" />
+              <TextInput style={styles.input} placeholder="0.0" />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>कटौती (H)</Text>
-              <TextInput style={styles.input} placeholder="0" />
-            </View>
-          </View>
-          <Text style={styles.label}>Raideep Traders (RJT5032234) 2200 Sq. ft</Text>
-          <Text style={styles.label}>दीवार पेंटिंग का प्रकार: Wall Shop Painting</Text>
-        </Card.Content>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.sectionHeader}>काम पूरा होने के बाद फोटो और वीडियो ल�</Text>
-          <Button title="फोटो अपलोड करे" onPress={handleDocumentPick} />
-          <Button title="वीडियो अपलोड करे" onPress={handleDocumentPick} />
-          <Text style={styles.sectionHeader}>मुझे जमा करने से पहले सभी अपलोड किए गए दस्तावेज़ और माप को जांच कर लिया है</Text>
-          <Button title="जमा करे" onPress={handleSubmit} />
-          <Text style={styles.sectionHeader}>स्थान का पता</Text>
-          <Text style={styles.address}>Main Road Devgard, near airport road, 560359</Text>
-        </Card.Content>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.sectionHeader}>Sidewall</Text>
-          <View style={styles.row}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>चौड़ाई (W)</Text>
-              <TextInput style={styles.input} placeholder="27" />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>लंबाई (H)</Text>
-              <TextInput style={styles.input} placeholder="16.5" />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>कटौती (W)</Text>
-              <TextInput style={styles.input} placeholder="2" />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>कटौती (H)</Text>
-              <TextInput style={styles.input} placeholder="0.5" />
+              <TextInput style={styles.input} placeholder="0.0" />
             </View>
           </View>
         </Card.Content>
@@ -164,25 +151,45 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
 
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.sectionHeader}>Raideep Traders (RJ503234) (2200 sq. ft)</Text>
-          <Text style={styles.label}>डीलर / डिपो प्रमाणप�</Text>
-          <Button title="जमा करे" onPress={handleSubmit} />
-          <Button title="किराये की रसीद�" onPress={handleDocumentPick} />
-          <Text style={styles.address}>Main Road Devgard, near airport road, 560359</Text>
-          <Text style={styles.address}>Main Road Devgard, near police station, 560339</Text>
+          <View style={styles.rowBetween}>
+            <Text style={styles.label1}>डीलर / डिपो प्रमाणप</Text>
+            <Text style={styles.label}> + फोटो अपलोड करे</Text>
+          </View>
+          {renderPhotoContainer(selectedPhotosCard1, 1)}
+          
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel()}>
+              <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(1)}>
+              <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
+            </TouchableOpacity>
+          </View>
         </Card.Content>
       </Card>
 
-      {uploadedFiles.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.uploadedFilesHeader}>Uploaded Files:</Text>
-            {uploadedFiles.map((file, index) => (
-              <Text key={index} style={styles.uploadedFile}>{file.name}</Text>
-            ))}
-          </Card.Content>
-        </Card>
-      )}
+      <Card style={styles.card}>
+        <Card.Content>
+          <View style={styles.rowBetween}>
+            <Text style={styles.label1}>किरायें की रसीदें</Text>
+            <Text style={styles.label}> + फोटो अपलोड करे</Text>
+          </View>
+          {renderPhotoContainer(selectedPhotosCard2, 2)}
+          
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel()}>
+              <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(2)}>
+              <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
+            </TouchableOpacity>
+          </View>
+        </Card.Content>
+      </Card>
+
+      <TouchableOpacity style={[styles.submitButton, { alignSelf: 'center' }]} onPress={handleSubmitOverall}>
+        <Text style={styles.submitButtonText}>जमा करें</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -191,7 +198,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#E0F7FA',
   },
   cardContent: {
     padding: 20,
@@ -207,11 +214,25 @@ const styles = StyleSheet.create({
     color: '#333',
     marginLeft: 10,
     marginRight: 10,
-    flex: 1, // This allows the title to take remaining space
+    flex: 1,
   },
   buttonIcon: {
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
+  },
+  buttonIcon1: {
+    width: 34,
+    height: 34,
+  },
+  buttonIcon2: {
+    width: 30,
+    height: 30,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    marginLeft: 10,
   },
   subHeader: {
     fontSize: 18,
@@ -229,12 +250,6 @@ const styles = StyleSheet.create({
   contact: {
     fontSize: 16,
     color: '#444',
-  },
-  mapLink: {
-    color: 'blue',
-    textDecorationLine: 'underline',
-    fontSize: 16,
-    marginTop: 10,
   },
   officer: {
     fontSize: 16,
@@ -261,6 +276,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: '#555',
+    marginTop: 15,
+  },
+  label1: {
+    fontSize: 18,
+    color: '#555',
+    marginTop: 15,
+    fontWeight: 'bold',
   },
   input: {
     height: 40,
@@ -285,64 +307,122 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     marginTop: 5,
   },
-  uploadedFilesHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  
+  header1: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  userNameContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    marginEnd: 5,
+  },
+  userName: {
+    fontSize: 19,
     color: '#333',
   },
-  uploadedFile: {
+  officerName: {
     fontSize: 16,
-    color: '#555',
-    marginVertical: 5,
+    color: '#585858',
+    fontWeight: 'bold',
+  },
+  logo: {
+    width: 60,
+    height: 50,
+    resizeMode: 'contain',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  logoutButton: {
+    padding: 5,
+  },
+  logoutImage: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  photoContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  photo: {
+    width: '48%',
+    height: 140,
+    aspectRatio: 1,
+    marginBottom: 10,
+    marginTop: 10,
+    borderRadius: 10,
+    backgroundColor: '#ccc',
+  },
+  placeholderContainer: {
+    width: '48%',
+    height: 140,
+    aspectRatio: 1,
+    marginBottom: 10,
+    marginTop: 10,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  placeholderImage: {
+    width: '60%',
+    height: '60%',
+    resizeMode: 'contain',
+  },
+  customButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  submitButton: {
+    width: '48%',
+    backgroundColor: 'green',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 40,
+    alignSelf: 'flex-end',
+  },
+  submitButtonText: {
+    fontSize: 20,
+    textAlign: "center",
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
   
-    header1: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    userNameContainer: {
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      marginEnd : 5
-    },
-    userName: {
-      fontSize: 19,
-      color: '#333',
-    },
-    officerName: {
-      fontSize: 16,
-      color: '#585858',
-      fontWeight : 'bold'
-    },
-    logo: {
-      width: 60,
-      height: 50,
-      resizeMode: 'contain',
-    },
-    headerRight: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    
-    profileImage: {
-      width: 40,
-      height: 40,
-      borderRadius: 5,
-      marginRight: 5,
-      
-    },
-    logoutButton: {
-      padding: 5,
-    },
-    logoutImage: {
-      width: 35,
-      height: 35,
-      resizeMode: 'contain',
-    },
-
-    // Other styles as per your existing implementation
-  });
+  rightButton: {
+    alignSelf: 'flex-end',
+  },
+  leftButton: {
+    alignSelf: 'flex-start',
+  },
+});
 
 export default TaskDetailScreen;
