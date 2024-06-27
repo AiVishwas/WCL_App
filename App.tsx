@@ -20,17 +20,17 @@ const App = () => {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerShown: false }} // Hide the header for the Login screen
+          options={{ headerShown: false }} 
         />
         <Stack.Screen
           name="TaskList"
           component={TaskListScreen}
-          options={{ headerShown: false }} // Hide the header for the TaskList screen
+          options={{ headerShown: false }} 
         />
         <Stack.Screen
           name="TaskDetail"
           component={TaskDetailScreen}
-          options={{ headerShown: false }} // Hide the header for the TaskDetail screen
+          options={{ headerShown: false }} 
         />
       </Stack.Navigator>
     </NavigationContainer>
