@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image, Modal } from 'react-native';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import {StackActions} from '@react-navigation/native';
+import { StackActions } from '@react-navigation/native';
 import { Card } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 type TaskDetailScreenRouteProp = RouteProp<RootStackParamList, 'TaskDetail'>;
 
 const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
@@ -15,6 +16,8 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const [selectedPhotosCard1, setSelectedPhotosCard1] = useState<string[]>([]);
   const [selectedPhotosCard2, setSelectedPhotosCard2] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [showPhotoContainer1, setShowPhotoContainer1] = useState(false);
+  const [showPhotoContainer2, setShowPhotoContainer2] = useState(false);
 
   const handleDocumentPick = async (cardIndex: number) => {
     try {
@@ -51,8 +54,10 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const handleSubmit = (cardIndex: number) => {
     if (cardIndex === 1) {
       Alert.alert('Submitted', 'Photos from Card 1 have been submitted.');
+      setShowPhotoContainer1(false);
     } else if (cardIndex === 2) {
       Alert.alert('Submitted', 'Photos from Card 2 have been submitted.');
+      setShowPhotoContainer2(false);
     }
   };
 
@@ -64,11 +69,24 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
       .catch((error) => {
         console.error('Error clearing user session:', error);
       });
-      navigation.dispatch(StackActions.popToTop());
+    navigation.dispatch(StackActions.popToTop());
   };
 
-  const handleCancel = () => {
+  const handleCancel = (cardIndex: number) => {
     Alert.alert('Cancel', 'Delete Images ?');
+    if (cardIndex === 1) {
+      setShowPhotoContainer1(false);
+    } else if (cardIndex === 2) {
+      setShowPhotoContainer2(false);
+    }
+  };
+
+  const togglePhotoContainer = (cardIndex: number) => {
+    if (cardIndex === 1) {
+      setShowPhotoContainer1(!showPhotoContainer1);
+    } else if (cardIndex === 2) {
+      setShowPhotoContainer2(!showPhotoContainer2);
+    }
   };
 
   const renderPhotoContainer = (selectedPhotos: string[], cardIndex: number) => {
@@ -84,9 +102,22 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
             <Image source={require('../assets/images/placeholder.png')} style={styles.placeholderImage} />
           </TouchableOpacity>
         ))}
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel(cardIndex)}>
+            <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
+          </TouchableOpacity>
+        </View>
+  
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(cardIndex)}>
+            <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
+  
 
   return (
     <ScrollView style={styles.container}>
@@ -153,18 +184,11 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
         <Card.Content>
           <View style={styles.rowBetween}>
             <Text style={styles.label1}>डीलर / डिपो प्रमाणप</Text>
-            <Text style={styles.label}> + फोटो अपलोड करे</Text>
-          </View>
-          {renderPhotoContainer(selectedPhotosCard1, 1)}
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel()}>
-              <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(1)}>
-              <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
+            <TouchableOpacity onPress={() => togglePhotoContainer(1)}>
+              <Text style={styles.label}> + फोटो अपलोड करे</Text>
             </TouchableOpacity>
           </View>
+          {showPhotoContainer1 && renderPhotoContainer(selectedPhotosCard1, 1)}
         </Card.Content>
       </Card>
 
@@ -172,18 +196,11 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
         <Card.Content>
           <View style={styles.rowBetween}>
             <Text style={styles.label1}>किरायें की रसीदें</Text>
-            <Text style={styles.label}> + फोटो अपलोड करे</Text>
-          </View>
-          {renderPhotoContainer(selectedPhotosCard2, 2)}
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel()}>
-              <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(2)}>
-              <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
+            <TouchableOpacity onPress={() => togglePhotoContainer(2)}>
+              <Text style={styles.label}> + फोटो अपलोड करे</Text>
             </TouchableOpacity>
           </View>
+          {showPhotoContainer2 && renderPhotoContainer(selectedPhotosCard2, 2)}
         </Card.Content>
       </Card>
 
@@ -217,16 +234,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonIcon: {
-    width: 26,
-    height: 26,
+    width: 34,
+    height: 34,
   },
   buttonIcon1: {
     width: 34,
     height: 34,
   },
   buttonIcon2: {
-    width: 30,
-    height: 30,
+    width: 34,
+    height: 34,
+    marginRight: 5,
   },
   buttonText: {
     fontSize: 18,
@@ -349,6 +367,7 @@ const styles = StyleSheet.create({
   logoutImage: {
     width: 40,
     height: 40,
+    borderRadius: 5,
     resizeMode: 'contain',
   },
   rowBetween: {
@@ -395,9 +414,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
     marginTop: 10,
+    
   },
   submitButton: {
-    width: '48%',
+    width : '48%',
     backgroundColor: 'green',
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -407,14 +427,14 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 20,
-    textAlign: "center",
+    textAlign : "center",
     fontWeight: 'bold',
     color: 'white',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    
   },
   
   rightButton: {
@@ -424,5 +444,4 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
 });
-
 export default TaskDetailScreen;
