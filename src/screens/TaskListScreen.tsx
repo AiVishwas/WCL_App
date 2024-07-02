@@ -10,6 +10,8 @@ import { RootStackParamList, Task } from '../navigation/types';
 type TaskListScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
 type TaskListScreenRouteProp = RouteProp<RootStackParamList, 'TaskList'>;
 
+
+
 const fetchTasksFromBackend = async (): Promise<Task[]> => {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -45,6 +47,11 @@ const TaskListScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', code: '', size: '', address: '', contact: '', officer: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  type user = {
+    username: string;
+    password: string;
+    name: string;
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {

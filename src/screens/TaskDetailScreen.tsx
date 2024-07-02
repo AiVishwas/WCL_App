@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
@@ -18,6 +18,21 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showPhotoContainer1, setShowPhotoContainer1] = useState(false);
   const [showPhotoContainer2, setShowPhotoContainer2] = useState(false);
+  const [dimensions, setDimensions] = useState({
+    width: '',
+    height: '',
+    cutWidth: '',
+    cutHeight: ''
+  });
+
+
+  const handleInputChange = (name: string, value: string) => {
+    const regex = /^\d*\.?\d*$/;
+    if (regex.test(value)) {
+      setDimensions({ ...dimensions, [name]: value });
+    }
+  };
+  
 
   const handleDocumentPick = async (cardIndex: number) => {
     try {
@@ -90,7 +105,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   };
 
   const renderPhotoContainer = (selectedPhotos: string[], cardIndex: number) => {
-    console.log(`Rendering photo container for card ${cardIndex}, selected photos:`, selectedPhotos);
+    
     return (
       <View style={styles.photoContainer}>
         {selectedPhotos.map((photo: string, index: number) => (
@@ -98,6 +113,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
         ))}
         {/* Render placeholder images for remaining slots in a 2x2 grid */}
         {Array.from({ length: 4 - selectedPhotos.length }, (_, index) => (
+
           <TouchableOpacity key={index} onPress={() => handleDocumentPick(cardIndex)} style={styles.placeholderContainer}>
             <Image source={require('../assets/images/placeholder.png')} style={styles.placeholderImage} />
           </TouchableOpacity>
@@ -157,28 +173,55 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
           <Text style={styles.address}>{task.address}</Text>        
         </Card.Content>
       </Card>
+      
+
       <Card style={styles.card}>
         <Card.Content>
           <View style={styles.row}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>चौड़ाई (W)</Text>
-              <TextInput style={styles.input} placeholder="0.0" />
+              <TextInput
+                style={styles.input}
+                placeholder="0.0"
+                keyboardType="numeric"
+                value={dimensions.width}
+                onChangeText={(value) => handleInputChange('width', value)}
+              />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>लंबाई (H)</Text>
-              <TextInput style={styles.input} placeholder="0.0" />
+              <TextInput
+                style={styles.input}
+                placeholder="0.0"
+                keyboardType="numeric"
+                value={dimensions.height}
+                onChangeText={(value) => handleInputChange('height', value)}
+              />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>कटौती (W)</Text>
-              <TextInput style={styles.input} placeholder="0.0" />
+              <TextInput
+                style={styles.input}
+                placeholder="0.0"
+                keyboardType="numeric"
+                value={dimensions.cutWidth}
+                onChangeText={(value) => handleInputChange('cutWidth', value)}
+              />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>कटौती (H)</Text>
-              <TextInput style={styles.input} placeholder="0.0" />
+              <TextInput
+                style={styles.input}
+                placeholder="0.0"
+                keyboardType="numeric"
+                value={dimensions.cutHeight}
+                onChangeText={(value) => handleInputChange('cutHeight', value)}
+              />
             </View>
           </View>
         </Card.Content>
       </Card>
+
 
       <Card style={styles.card}>
         <Card.Content>
@@ -442,6 +485,7 @@ const styles = StyleSheet.create({
   },
   leftButton: {
     alignSelf: 'flex-start',
+    
   },
 });
 export default TaskDetailScreen;
