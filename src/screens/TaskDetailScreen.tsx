@@ -139,7 +139,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
     <ScrollView style={styles.container}>
       <View style={styles.header1}>
         <Image source={require('../assets/images/new_logo.png')} style={styles.logo} />
-        {isLoggedIn ? (
+        {isLoggedIn && (
           <View style={styles.headerRight}>
             <View style={styles.userNameContainer}>
               <Text style={styles.userName}>नमस्ते</Text>
@@ -150,7 +150,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
               <Image source={require('../assets/images/logout.png')} style={styles.logoutImage} />
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
       </View>
       <Card style={styles.card}>
         <Card.Content style={styles.cardContent}>
@@ -257,7 +257,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal : 10,
     backgroundColor: '#E0F7FA',
   },
   cardContent: {
@@ -378,7 +378,8 @@ const styles = StyleSheet.create({
   userNameContainer: {
     flexDirection: 'column',
     alignItems: 'flex-end',
-    marginEnd: 5,
+    marginEnd: 10,
+    marginTop: 10,
   },
   userName: {
     fontSize: 19,
@@ -391,8 +392,10 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 60,
-    height: 50,
+    height: 60,
     resizeMode: 'contain',
+    marginTop: 10,
+    marginLeft: 10,
   },
   headerRight: {
     flexDirection: 'row',
@@ -403,14 +406,17 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 5,
     marginRight: 5,
+    marginTop: 10,
   },
   logoutButton: {
-    padding: 5,
+    width: 40,
+    height: 40,
+    marginTop: 10,
+    marginRight: 10,
   },
   logoutImage: {
     width: 40,
     height: 40,
-    borderRadius: 5,
     resizeMode: 'contain',
   },
   rowBetween: {
