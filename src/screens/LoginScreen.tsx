@@ -27,6 +27,7 @@ const LoginScreen = () => {
     const user = dummyUsers.find(user => user.username === username && user.password === password);
     if (user) {
       navigation.navigate('TaskList', { officerName: user.name }); 
+      
     } else {
       Alert.alert('Login Failed', 'Invalid username or password');
     }  

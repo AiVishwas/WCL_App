@@ -1,4 +1,3 @@
-// TaskListScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, Modal, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -9,8 +8,6 @@ import { RootStackParamList, Task } from '../navigation/types';
 
 type TaskListScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
 type TaskListScreenRouteProp = RouteProp<RootStackParamList, 'TaskList'>;
-
-
 
 const fetchTasksFromBackend = async (): Promise<Task[]> => {
   return new Promise(resolve => {
@@ -42,7 +39,7 @@ const fetchTasksFromBackend = async (): Promise<Task[]> => {
 const TaskListScreen = () => {
   const navigation = useNavigation<TaskListScreenNavigationProp>();
   const route = useRoute<TaskListScreenRouteProp>();
-  const { officerName } = route.params || {}; 
+  const { officerName, taskId, backgroundColor } = route.params || {}; 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', code: '', size: '', address: '', contact: '', officer: '' });
@@ -83,14 +80,18 @@ const TaskListScreen = () => {
     navigation.dispatch(StackActions.popToTop());
   };
 
-  const renderTask = ({ item }: { item: Task }) => (
-    <TouchableOpacity style={styles.taskCard} onPress={() => navigation.navigate('TaskDetail', { task: item })}>
-      <Text style={styles.taskTitle}>{item.title} {item.code}</Text>
-      <Text>{item.address}</Text>
-      <Text>📞 {item.contact}</Text>
-      <Text>Linked Officer: {item.officer}</Text>
-    </TouchableOpacity>
-  );
+  const renderTask = ({ item }: { item: Task }) => {
+    const taskStyle = item.id === taskId ? [styles.taskCard, { backgroundColor }] : styles.taskCard;
+    
+    return (
+      <TouchableOpacity style={taskStyle} onPress={() => navigation.navigate('TaskDetail', { task: item , officerName})}>
+        <Text style={styles.taskTitle}>{item.title} {item.code}</Text>
+        <Text>{item.address}</Text>
+        <Text>📞 {item.contact}</Text>
+        <Text>Linked Officer: {item.officer}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -210,16 +211,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     borderRadius: 15,
-    margin : 10,
-    marginBottom : 15,
+    margin: 10,
+    marginBottom: 15,
     paddingVertical: 10,
-    backgroundColor : "#FF3131"
+    backgroundColor: "#FF3131"
   },
   title: {
     marginHorizontal: 10,
     fontSize: 24,
     fontWeight: 'bold',
-    color : "white",
+    color: "white",
   },
   searchBox: {
     flex: 0.5,
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginLeft: 10,
-    borderWidth: 2.5, 
+    borderWidth: 2.5,
     borderColor: '#000',
   },
   taskCard: {

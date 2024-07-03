@@ -25,14 +25,12 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
     cutHeight: ''
   });
 
-
   const handleInputChange = (name: string, value: string) => {
     const regex = /^\d*\.?\d*$/;
     if (regex.test(value)) {
       setDimensions({ ...dimensions, [name]: value });
     }
   };
-  
 
   const handleDocumentPick = async (cardIndex: number) => {
     try {
@@ -59,7 +57,23 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   };
 
   const handleSubmitOverall = () => {
-    Alert.alert('Submit Button Pressed', 'Submit Overall');
+    if (
+      !dimensions.width ||
+      !dimensions.height ||
+      !dimensions.cutWidth ||
+      !dimensions.cutHeight ||
+      selectedPhotosCard1.length === 0 ||
+      selectedPhotosCard2.length === 0
+    ) {
+      Alert.alert('Error', 'Please fill all fields and upload at least one photo in each container.');
+      return;
+    }
+
+    navigation.navigate('TaskList', {
+      officerName: "",
+      taskId: task.id,
+      backgroundColor: 'orange',
+    });
   };
 
   const handleAdd = () => {
@@ -105,26 +119,21 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   };
 
   const renderPhotoContainer = (selectedPhotos: string[], cardIndex: number) => {
-    
     return (
       <View style={styles.photoContainer}>
         {selectedPhotos.map((photo: string, index: number) => (
           <Image key={index} source={{ uri: photo }} style={styles.photo} />
         ))}
-        {/* Render placeholder images for remaining slots in a 2x2 grid */}
         {Array.from({ length: 4 - selectedPhotos.length }, (_, index) => (
-
           <TouchableOpacity key={index} onPress={() => handleDocumentPick(cardIndex)} style={styles.placeholderContainer}>
             <Image source={require('../assets/images/placeholder.png')} style={styles.placeholderImage} />
           </TouchableOpacity>
         ))}
-
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={[styles.customButton, styles.leftButton]} onPress={() => handleCancel(cardIndex)}>
             <Image source={require('../assets/images/deleted.png')} style={styles.buttonIcon1} />
           </TouchableOpacity>
         </View>
-  
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={[styles.customButton, styles.rightButton]} onPress={() => handleSubmit(cardIndex)}>
             <Image source={require('../assets/images/done1.png')} style={styles.buttonIcon1} />
@@ -133,7 +142,6 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
       </View>
     );
   };
-  
 
   return (
     <ScrollView style={styles.container}>
@@ -170,10 +178,9 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.sectionHeader}>जगह</Text>
-          <Text style={styles.address}>{task.address}</Text>        
+          <Text style={styles.address}>{task.address}</Text>
         </Card.Content>
       </Card>
-      
 
       <Card style={styles.card}>
         <Card.Content>
@@ -221,7 +228,6 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
           </View>
         </Card.Content>
       </Card>
-
 
       <Card style={styles.card}>
         <Card.Content>
