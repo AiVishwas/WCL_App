@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type TaskDetailScreenRouteProp = RouteProp<RootStackParamList, 'TaskDetail'>;
 
+
 const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const navigation = useNavigation();
   const { task } = route.params;
@@ -24,6 +25,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
     cutWidth: '',
     cutHeight: ''
   });
+  
 
   const handleInputChange = (name: string, value: string) => {
     const regex = /^\d*\.?\d*$/;
@@ -55,7 +57,6 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const handleGoBack = () => {
     navigation.goBack();
   };
-
   const handleSubmitOverall = () => {
     if (
       !dimensions.width ||
@@ -68,13 +69,14 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
       Alert.alert('Error', 'Please fill all fields and upload at least one photo in each container.');
       return;
     }
-
+  
     navigation.navigate('TaskList', {
-      officerName: "",
+      officerName: "Officer Name",
       taskId: task.id,
       backgroundColor: 'orange',
     });
   };
+  
 
   const handleAdd = () => {
     Alert.alert('Add Files', 'Add Photos/Videos');

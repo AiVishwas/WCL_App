@@ -1,7 +1,7 @@
 export type RootStackParamList = {
   Login: undefined;
-  TaskList: { officerName: string ; taskId?: string; backgroundColor?: string};
-  TaskDetail: { task: Task; officerName: string};
+  TaskList: { officerName: string; taskId?: string; backgroundColor?: string };
+  TaskDetail: { task: Task; officerName: string };
 };
 
 export type Task = {
