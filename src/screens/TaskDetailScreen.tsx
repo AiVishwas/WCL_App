@@ -71,9 +71,9 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
     }
   
     navigation.navigate('TaskList', {
-      officerName: "Officer Name",
-      taskId: task.id,
-      backgroundColor: 'orange',
+        officerName: task.officer,
+        taskId: task.id,
+        backgroundColor: 'orange',
     });
   };
   
