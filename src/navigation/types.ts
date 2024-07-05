@@ -2,7 +2,7 @@ export type RootStackParamList = {
   Login: undefined;
   TaskList: { officerName: string; taskId?: string; backgroundColor?: string };
   TaskDetail: { task: Task; officerName: string };
-  LongPressDetailScreen: { task: Task };
+  LongPressDetailScreen : {task: Task}
 };
 
 export type Task = {
