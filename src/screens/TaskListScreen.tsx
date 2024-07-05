@@ -80,11 +80,16 @@ const TaskListScreen = () => {
     navigation.dispatch(StackActions.popToTop());
   };
 
-  const renderTask = ({ item }: { item: Task }) => {
+
+  const handleLongPress = (item: Task) => {
+    navigation.navigate('LongPressDetailScreen', { task: item });
+  };
+
+const renderTask = ({ item }: { item: Task }) => {
     const taskStyle = item.id === taskId ? [styles.taskCard, { backgroundColor }] : styles.taskCard;
     
     return (
-      <TouchableOpacity style={taskStyle} onPress={() => navigation.navigate('TaskDetail', { task: item , officerName})}>
+      <TouchableOpacity style={taskStyle}  onLongPress={() => handleLongPress(item)} onPress={() => navigation.navigate('TaskDetail', { task: item , officerName})}>
         <Text style={styles.taskTitle}>{item.title} {item.code}</Text>
         <Text>{item.address}</Text>
         <Text>📞 {item.contact}</Text>

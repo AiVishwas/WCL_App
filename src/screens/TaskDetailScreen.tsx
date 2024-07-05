@@ -95,7 +95,7 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
   const handleLogout = () => {
     AsyncStorage.removeItem('userToken')
       .then(() => {
-        setIsLoggedIn(false); // Update login state to false after logout
+        setIsLoggedIn(false); 
       })
       .catch((error) => {
         console.error('Error clearing user session:', error);

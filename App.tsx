@@ -9,6 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './src/screens/LoginScreen';
 import TaskListScreen from './src/screens/TaskListScreen';
 import TaskDetailScreen from './src/screens/TaskDetailScreen';
+import LongPressDetailScreen from './src/screens/LongPressDetailScreen';
 import { RootStackParamList } from './src/navigation/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -31,6 +32,11 @@ const App = () => {
           name="TaskDetail"
           component={TaskDetailScreen}
           options={{ headerShown: false }} 
+        />
+        <Stack.Screen
+          name="LongPressDetailScreen"
+          component={LongPressDetailScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
