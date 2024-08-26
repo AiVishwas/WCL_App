@@ -76,6 +76,8 @@ const TaskDetailScreen = ({ route }: { route: TaskDetailScreenRouteProp }) => {
         backgroundColor: 'orange',
     });
   };
+
+  
   
 
   const handleAdd = () => {
